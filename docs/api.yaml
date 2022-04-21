@@ -1,0 +1,401 @@
+openapi: 3.0.0
+info:
+  title: 'url-shortener'
+  description: 'api to create and manage short urls'
+  version: 0.1.0
+  contact:
+    name: 'Lorenz Dobmeier'
+    email: 'lorenz.dobmeier@gmx.de'
+servers:
+  - url: 'https://example.com'
+
+paths:
+  
+  /:
+    get:
+      summary: 'get all keys'
+      security:
+        - oAuth2: []
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  nullable: false
+                  minLength: 4
+                  maxLength: 20
+                  example: 'j209sn2'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+    post:
+      summary: 'create a short url'
+      security:
+        - oAuth2: []
+      requestBody:
+        $ref: '#/components/requestBodies/longurl'
+      responses:
+        '201':
+          $ref: '#/components/responses/shorturl'
+        '400':
+          $ref: '#/components/responses/badrequest'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+  
+  /{key}:
+    put:
+      summary: 'update the long url of a key'
+      security:
+        - oAuth2: []
+      parameters:
+        - $ref: '#/components/parameters/xauthtoken'
+        - $ref: '#/components/parameters/shorturlkey'
+      requestBody:
+        $ref: '#/components/requestBodies/longurl'
+      responses:
+        '200':
+          $ref: '#/components/responses/shorturl'
+        '400':
+          $ref: '#/components/responses/badrequest'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/notfound'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+    get:
+      summary: 'redirect to long url'
+      parameters:
+        - $ref: '#/components/parameters/shorturlkey'
+      responses:
+        '302':
+          $ref: '#/components/responses/found'
+        '404':
+          $ref: '#/components/responses/notfound'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+    delete:
+      summary: 'delete a short url'
+      security:
+        - oAuth2: []
+      parameters:
+        - $ref: '#/components/parameters/xauthtoken'
+        - $ref: '#/components/parameters/shorturlkey'
+      responses:
+        '204':
+          $ref: '#/components/responses/nocontent'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/notfound'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+  
+  /{key}/info:
+    get:
+      summary: 'get info for key'
+      security:
+        - oAuth2: []
+      parameters:
+        - $ref: '#/components/parameters/shorturlkey'
+      responses:
+        '200':
+          $ref: '#/components/responses/info'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/notfound'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+  
+  /{key}/stats:
+    get:
+      summary: 'get statistics for key'
+      security:
+        - oAuth2: []
+      parameters:
+        - $ref: '#/components/parameters/shorturlkey'
+      responses:
+        '200':
+          $ref: '#/components/responses/statistics'
+        '401':
+          $ref: '#/components/responses/unauthorized'
+        '403':
+          $ref: '#/components/responses/forbidden'
+        '404':
+          $ref: '#/components/responses/notfound'
+        '500':
+          $ref: '#/components/responses/internalservererror'
+
+components:
+
+  securitySchemes:
+  
+    oAuth2:
+      type: oauth2
+      description: 'OAuth2 with implicit grant flow'
+      flows:
+        implicit:
+          authorizationUrl: 'https://login.microsoftonline.com/AZUREAD_APP_TENANTID/oauth2/v2.0/authorize'
+          scopes: {}
+
+  responses:
+  
+    nocontent:
+      description: 'No Content'
+  
+    found:
+      description: 'Found (Moved Temporarily)'
+  
+    badrequest:
+      description: 'Bad Request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+    unauthorized:
+      description: 'Unauthorized'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    forbidden:
+      description: 'Forbidden'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  
+    notfound:
+      description: 'Not Found'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    internalservererror:
+      description: 'Internal Server Error'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+ 
+    shorturl:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              key:
+                type: string
+                example: 'j209sn2'
+              oid:
+                type: string
+                format: uuid
+              longurl:
+                type: string
+                format: uri
+                example: 'https://mylongurl.com/service/route/key?param=dkjashbcdnka'
+              shorturl:
+                type: string
+                format: uri
+                example: 'https://example.com/j209sn2'
+              persistent:
+                type: boolean
+                example: false
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+    info:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              key:
+                type: string
+                example: 'j209sn2'
+              persistent:
+                type: boolean
+                nullable: false
+                example: true
+              shorturl:
+                type: string
+                format: uri
+                example: 'https://example.com/j209sn2'
+              longurl:
+                type: string
+                format: uri
+                example: 'https://mylongurl.com/service/route/key?param=dkjashbcdnka'
+              createdAt:
+                type: string
+                format: timestamp
+                example: "2021-01-01T00:00:00.000Z"
+              updatedAt:
+                type: string
+                format: timestamp
+                example: "2021-01-01T00:00:00.000Z"
+
+    statistics:
+      description: 'OK'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              key:
+                type: string
+                example: 'j209sn2'
+              calls:
+                type: number
+                format: int32
+                description: 'no. of requests for specified key'
+              uniqueCallers:
+                type: number
+                format: int32
+                description: 'no. of unique callers for specified key'
+              callsOfUniqueCallers:
+                type: array
+                items:
+                  type: number
+                  format: int32
+              history:
+                type: array
+                items:
+                  type: object
+                  description: 'dates are only provided, if there were one or more requests that day'
+                  properties:
+                    date:
+                      type: string
+                      format: date
+                      example: '2021-01-01'
+                    calls:
+                      type: number
+                      format: int32
+                      description: 'no. of requests on given date for specified key'
+                      example: 52
+
+  parameters:
+
+    xauthtoken:
+      name: 'x-auth-token'
+      in: header
+      required: true
+      description: 'token for authentication'
+      schema:
+        type: string
+    
+    shorturlkey:
+      name: 'key'
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 7
+        maxLength: 7
+      description: 'key of a short url'
+
+  schemas:
+
+    Error:
+      description: 'Error'
+      type: object
+      properties:
+        code:
+          type: number
+          description: 'http error code'
+        message:
+          type: string
+          description: 'http error message'
+        description:
+          type: string
+          maxLength: 150
+          description: 'additional description for error message'
+      required:
+        - code
+        - message
+    
+    ValidationError:
+      type: object
+      properties:
+        code:
+          type: number
+          description: 'http error code'
+        message:
+          type: string
+          description: 'http error message'
+        description:
+          type: string
+          maxLength: 150
+          description: 'additional description for error message'
+        validationErrors:
+          type: array
+          description: 'specific errors in request'
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+              msg:
+                type: string
+              param:
+                type: string
+              location:
+                type: string
+      required:
+        - code
+        - message
+        - validationErrors
+
+  requestBodies:
+  
+    longurl:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: ['longurl']
+            properties:
+              key:
+                type: string
+                nullable: false
+                minLength: 4
+                maxLength: 16
+                description: 'custom key instead of autogenerated key'
+                example: 'mykey'
+              longurl:
+                type: string
+                format: uri
+                nullable: false
+                description: 'long url for which a short url is generated'
+                example: 'https://mylongurl.com/service/route/key?param=dkjashbcdnka'
+              persistent:
+                type: boolean
+                nullable: false
+                description: 'if so, short url wont be deleted'
+                example: true

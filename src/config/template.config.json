@@ -1,0 +1,26 @@
+{
+	"server": {
+		"host": "localhost",
+		"port": 3000,
+		"ssl": {
+			"active": false,
+			"key": "/path/to/privatekey",
+			"cert": "/path/to/certificate"
+		}
+	},
+	"app": {
+		"tracking": false,
+		"entryMaxAge": 3600,
+		"cleanInterval": 15
+	},
+	"mongo": {
+		"host": "10.5.0.5",
+		"port": 27017,
+		"database": "shortener",
+		"collections": {
+			"urls": "urls",
+			"stats": "stats"
+		},
+		"authSource": "shortener"
+	}
+}

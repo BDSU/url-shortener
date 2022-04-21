@@ -1,0 +1,79 @@
+{
+  "name": "url-shortener",
+  "version": "0.1.0",
+  "description": "app to generate and manage short urls",
+  "author": "Lorenz Dobmeier",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --ext .js",
+    "start": "npm run app:production",
+    "test": "npm run test:unit",
+    "app:development": "NODE_ENV=development DEBUG=url-shortener:* node --use-strict src/index.js",
+    "app:production": "NODE_ENV=production node --use-strict src/index.js",
+    "test:coverage": "rm -rf coverage && rm -rf ./lcov-report && rm -f clover.xml && rm -f coverage-final.json && rm -f lcov.info && npm run test:unit -- --coverage --coverageDirectory --runInBand",
+    "test:badges": "jest-coverage-badges",
+    "test:unit": "jest --no-cache --runInBand",
+    "docs:update": "npm run test:badges && mv ./coverage/badge-*.svg ./docs/",
+    "licenses": "npx license-checker --summary"
+  },
+  "keywords": [
+    "nodejs",
+    "url",
+    "shortener",
+    "microservice",
+    "express",
+    "mongo",
+    "oauth",
+    "azure",
+    "active directory",
+    "aad"
+  ],
+  "devDependencies": {
+    "debug": "^4.3.4",
+    "eslint": "^8.11.0",
+    "jest": "^27.5.1",
+    "jest-coverage-badges": "^1.0.0",
+    "supertest": "^6.2.2"
+  },
+  "dependencies": {
+    "app-root-path": "^3.0.0",
+    "assert": "^2.0.0",
+    "async": "^3.2.3",
+    "axios": "^0.26.1",
+    "client-oauth2": "^4.3.3",
+    "cookie-parser": "^1.4.6",
+    "delay": "^5.0.0",
+    "dotenv": "^16.0.0",
+    "es6-crawler-detect": "^3.3.0",
+    "express": "^4.17.3",
+    "express-validator": "^6.14.0",
+    "helmet": "^5.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "jwt-decode": "^3.1.2",
+    "micro-base": "^0.10.0",
+    "mongodb": "^4.4.1",
+    "mongoose": "^6.2.8",
+    "morgan": "^1.10.0",
+    "path": "^0.12.7",
+    "uuid": "^8.3.2",
+    "uuid-validate": "^0.0.3"
+  },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/test/*.test.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/test/setup.js"
+    ],
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js"
+    ]
+  }
+}
