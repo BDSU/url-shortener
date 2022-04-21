@@ -1,0 +1,51 @@
+version: '3.7'
+
+services:
+
+  mongodb:
+    image: mongo:latest
+    container_name: url-shortener-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_USER_PASS}
+      MONGO_INITDB_DATABASE: shortener
+      API_USER: ${MONGO_API_USER}
+      API_USER_PASS: ${MONGO_API_USER_PASS}
+    command: [--auth]
+    expose:
+      - 27017
+    volumes:
+      - ./init.d/:/docker-entrypoint-initdb.d/
+      - mongodb_data:/data/db
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.5
+
+  shortener:
+    image: url-shortener-app
+    container_name: url-shortener
+    depends_on:
+      - mongodb
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3800:3800"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
+
+volumes:
+  mongodb_data:
